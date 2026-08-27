@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veiga Transportes — Direção 2: Comprovante de Entrega</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,700;0,900;1,900&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   DIREÇÃO 2 — COMPROVANTE DE ENTREGA
+   A página imita o documento que fecha a entrega. Claro ~80%.
+   As duas pontas do negócio viram as duas vias do mesmo recibo:
+   via clara = lojista, via escura = entregador.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root{
+  --grafite:#1A1A1A; --ambar:#FFC107; --cinza:#9A9A9A; --cinza-2:#8A8A8A;
+  --claro:#F4F4F4; --branco:#FFFFFF;
+  --texto-2-claro:#5E5E5E;  /* 6,5:1 sobre branco */
+  --texto-2-escuro:#9A9A9A; /* 6,2:1 sobre grafite */
+  --papel-2:#EAEAEA; --papel-3:#DEDEDE; --tinta-fraca:rgba(26,26,26,.16);
+  --f-display:'Archivo',system-ui,sans-serif;
+  --f-corpo:'IBM Plex Sans',system-ui,sans-serif;
+  --f-dado:'IBM Plex Mono',ui-monospace,monospace;
+  --raio:2px; --secao-y:48px; --largura:1160px; --gutter:clamp(20px,5vw,56px);
+  --swift-out:cubic-bezier(.16,1,.3,1);
+  --snap-in:cubic-bezier(.34,1.56,.64,1);
+  --cut:cubic-bezier(.65,0,.35,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--branco);color:var(--grafite);font-family:var(--f-corpo);-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+.container{max-width:var(--largura);margin-inline:auto;padding-inline:var(--gutter)}
+:focus-visible{outline:2px solid var(--grafite);outline-offset:2px}
+.via-escura :focus-visible{outline-color:var(--branco)}
+
+/* ── Escala tipográfica ────────────────────────────────────────────────
+   H1 maior das três (104px): papel em branco sustenta manchete sem
+   competir com foto. Corpo em 17/1,65 — respiro de documento legível,
+   não densidade de painel. */
+h1,h2,h3{margin:0}
+.h1{font-family:var(--f-display);font-weight:900;font-style:italic;
+    font-size:clamp(2.5rem,1.5rem+4.4vw,6.5rem);line-height:1;letter-spacing:-.015em}
+.h2{font-family:var(--f-display);font-weight:900;
+    font-size:clamp(1.625rem,1.4rem+1.1vw,2.5rem);line-height:1.1;letter-spacing:-.01em}
+.h3{font-family:var(--f-corpo);font-weight:700;font-size:clamp(1.0625rem,1rem+.2vw,1.1875rem);line-height:1.3}
+.corpo{font-size:clamp(1rem,.97rem+.15vw,1.0625rem);line-height:1.65;color:var(--texto-2-claro)}
+.corpo-p{font-size:13px;line-height:1.5;color:var(--texto-2-claro)}
+/* Tracking mais largo que a direção 1 — imita rótulo de formulário oficial */
+.rotulo{font-weight:700;font-size:11px;line-height:1;letter-spacing:.28em;text-transform:uppercase;
+        color:var(--texto-2-claro)}
+.dado{font-family:var(--f-dado);font-weight:500;font-size:15px;line-height:1.4;color:var(--grafite)}
+.via-escura{background:var(--grafite);color:var(--branco)}
+.via-escura .corpo,.via-escura .corpo-p{color:var(--texto-2-escuro)}
+.via-escura .rotulo{color:var(--texto-2-escuro)}
+.via-escura .dado{color:var(--branco)}
+
+/* ── Serrilha de canhoto ───────────────────────────────────────────────
+   O divisor do site inteiro. É gradiente repetido de verdade, não imagem
+   nem borda tracejada do navegador — o mesmo truque do cupom térmico. */
+.serrilha{height:1px;background:repeating-linear-gradient(90deg,var(--grafite) 0 6px,transparent 6px 12px)}
+.via-escura .serrilha{background:repeating-linear-gradient(90deg,var(--cinza) 0 6px,transparent 6px 12px)}
+
+/* ── Botões — personalidade "carimbo" ──────────────────────────────────
+   Não sobe nem ganha sombra: afunda e bate. A borda pontilhada deslocada
+   é o picote do selo. */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+     min-height:52px;padding:0 28px;border:0;border-radius:var(--raio);
+     font-family:var(--f-corpo);font-weight:700;font-size:14px;letter-spacing:.04em;
+     text-transform:uppercase;text-decoration:none;cursor:pointer;
+     transition:transform 140ms var(--snap-in),background-color 140ms var(--swift-out)}
+.btn-1{background:var(--ambar);color:var(--grafite)}
+.btn-1::after{content:'';position:absolute;inset:3px;border:1px dashed rgba(26,26,26,.55);
+              border-radius:1px;pointer-events:none}
+.btn-1:hover{transform:scale(.975)}
+.btn-1:active{transform:scale(.94)}
+.btn-2{background:transparent;color:var(--grafite);border:1.5px solid var(--grafite)}
+.btn-2:hover{background:var(--papel-2)}
+.btn-2:active{background:var(--papel-3)}
+/* Rotulo em 5E5E5E, nao 8A8A8A: sobre o papel gasto #DEDEDE o cinza
+   claro mede 2,57:1 e some. Este mede 4,82:1. Medido. */
+.btn-off{background:var(--papel-3);color:var(--texto-2-claro);cursor:not-allowed;pointer-events:none}
+.btn-off::after{border-color:rgba(138,138,138,.5)}
+
+/* ── Carimbo V ─────────────────────────────────────────────────────────
+   Moldura retangular com o canto cortado no ângulo de 30° da marca.
+   Nunca círculo: o V não tem uma curva sequer, um selo redondo seria
+   um objeto de outra marca. */
+.carimbo{display:inline-flex;align-items:center;gap:12px;padding:12px 20px 12px 16px;
+         background:var(--ambar);color:var(--grafite);transform:rotate(-8deg);
+         clip-path:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 9px) 100%,0 100%)}
+.carimbo .rotulo{color:var(--grafite);letter-spacing:.22em}
+
+/* ── Header — estático de propósito ───────────────────────────────────
+   Papel não flutua atrás de barra fixa. Header sticky quebraria a ficção
+   do documento parado na tela. */
+.topo{background:var(--branco);border-bottom:1px solid var(--tinta-fraca)}
+.topo-in{display:flex;align-items:center;justify-content:space-between;height:68px}
+.marca{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.marca-txt{display:flex;flex-direction:column;gap:2px}
+.marca-nome{font-family:var(--f-display);font-weight:900;font-style:italic;font-size:19px;
+            line-height:.9;letter-spacing:-.015em}
+.marca-desc{font-weight:700;font-size:8px;line-height:1;letter-spacing:.4em;color:var(--texto-2-claro)}
+.nav{display:flex;gap:26px}
+.nav a{text-decoration:none;color:var(--texto-2-claro);font-weight:400;font-size:14px;
+       padding-bottom:2px;border-bottom:1px dotted transparent;transition:border-color 160ms var(--swift-out),color 160ms var(--swift-out)}
+.nav a:hover{color:var(--grafite);border-bottom-color:var(--grafite)}
+/* A nav sai da barra no celular. Em 390px ela empurrava o header e
+   estourava a pagina em 58px (medido, nao estimado). No site real vira
+   menu; no preview, o que decide a direcao e o hero, nao o menu. */
+@media (max-width:759px){ .nav{display:none} }
+
+/* ── Hero — o documento ────────────────────────────────────────────────*/
+.doc{border-top:3px double var(--grafite);padding-block:36px 0}
+.doc-num{display:flex;flex-wrap:wrap;gap:8px 18px;margin-bottom:36px}
+.doc-num .dado{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--texto-2-claro)}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:36px;align-items:start;margin-bottom:36px}
+.hero .h1{margin-bottom:24px}
+.hero .corpo{max-width:38ch}
+
+/* A foto é anexo grampeado, não capa. Rotação de 3°, sombra de contato
+   curtíssima (papel não levanta) e uma fita âmbar cruzando o canto. */
+.grampo{position:relative;transform:rotate(3deg);box-shadow:2px 2px 0 rgba(26,26,26,.15);
+        border:6px solid var(--branco);outline:1px solid var(--tinta-fraca)}
+.grampo img{width:100%;height:220px;object-fit:cover;filter:url(#duotone-veiga)}
+/* Canto cortado no angulo da marca, nao fita colada. O triangulo tem
+   cateto 52 por 90: 52/90 = 0,577 — os mesmos 30 graus do V. Uma fita
+   solta em 45 graus seria adesivo de qualquer marca. */
+.grampo::after{content:'';position:absolute;top:6px;right:6px;width:52px;height:90px;
+               background:var(--ambar);clip-path:polygon(100% 0,100% 100%,0 0)}
+.grampo figcaption{padding:9px 4px 2px;font-family:var(--f-dado);font-size:11px;
+                   letter-spacing:.06em;color:var(--texto-2-claro)}
+
+/* Campos do documento — rótulo em cima, valor em mono embaixo */
+.campos{display:grid;grid-template-columns:repeat(2,1fr);gap:22px 28px;padding-block:24px}
+.campo .rotulo{display:block;margin-bottom:8px}
+.abas{display:flex;flex-wrap:wrap;gap:14px;padding-block:26px 40px}
+
+/* ── Para quem é — checklist de formulário ────────────────────────────
+   Um item promovido em linha cheia e os outros cinco em duas colunas com
+   altura naturalmente desigual. A quebra da grade vem do conteúdo real de
+   cada categoria, não de um artifício. */
+.secao{padding-block:var(--secao-y)}
+.secao-cab{display:flex;align-items:baseline;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+.check{display:grid;grid-template-columns:1fr;gap:0;border:1px solid var(--grafite);border-radius:var(--raio)}
+.item{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:18px 20px;
+      border-top:1px solid var(--tinta-fraca);transition:border-color 200ms var(--swift-out)}
+.item:first-child{border-top:0}
+.item:hover{border-color:var(--ambar)}
+.item-topo{background:var(--claro);border-top:0;border-bottom:1px solid var(--grafite)}
+.caixa{width:22px;height:22px;border:1.5px solid var(--grafite);border-radius:1px;flex:none;
+       display:grid;place-items:center;margin-top:2px}
+.caixa-on{background:var(--grafite)}
+.item-nome{font-family:var(--f-corpo);font-weight:700;font-size:17px;line-height:1.3}
+.item-topo .item-nome{font-size:19px}
+.item-desc{margin:4px 0 0;font-size:14px;line-height:1.5;color:var(--texto-2-claro)}
+.item-tag{display:inline-block;margin-top:8px;font-family:var(--f-dado);font-size:11px;
+          letter-spacing:.12em;text-transform:uppercase;color:var(--texto-2-claro);
+          border-bottom:1px dotted var(--tinta-fraca);padding-bottom:2px}
+
+/* ── Faixa de fatos — resumo do recibo ────────────────────────────────*/
+.resumo{background:var(--claro);border:1px solid var(--grafite);border-radius:var(--raio)}
+.resumo-grid{display:grid;grid-template-columns:1fr;gap:0}
+.res-campo{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:16px;
+           padding:16px 20px;border-bottom:1px dotted var(--tinta-fraca)}
+.res-campo .rotulo{letter-spacing:.24em}
+.res-val{font-family:var(--f-dado);font-weight:700;font-size:15px;text-align:right}
+.res-conf{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;
+          padding:22px 20px;background:var(--branco)}
+
+/* ── CTA final — as duas vias do mesmo recibo ─────────────────────────*/
+.vias{display:grid;grid-template-columns:1fr;border:1px solid var(--grafite);border-radius:var(--raio);overflow:hidden}
+.via{padding:32px 26px;display:flex;flex-direction:column;gap:14px;align-items:flex-start}
+.via-a{background:var(--branco)}
+.via-b{background:var(--grafite);color:var(--branco)}
+.via-b .corpo{color:var(--texto-2-escuro)}
+.via-b .rotulo{color:var(--ambar)}
+
+/* ── Style tile ───────────────────────────────────────────────────────*/
+.tile{background:var(--claro);border-bottom:1px solid var(--tinta-fraca)}
+.tile-bloco{padding-block:32px;border-top:1px dotted var(--tinta-fraca)}
+.tile-bloco:first-child{border-top:0}
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.sw-chip{height:64px;border-radius:var(--raio);border:1px solid var(--tinta-fraca)}
+.sw-nome{margin-top:10px;font-weight:700;font-size:12px;letter-spacing:.06em}
+.sw-hex{font-family:var(--f-dado);font-size:11px;color:var(--texto-2-claro);margin-top:2px}
+.sw-papel{font-size:11px;line-height:1.35;color:var(--texto-2-claro);margin-top:6px}
+.escala>*{margin-bottom:16px}
+.escala-item{display:flex;flex-wrap:wrap;align-items:baseline;gap:14px}
+.escala-tag{font-family:var(--f-dado);font-size:10px;color:var(--texto-2-claro);letter-spacing:.08em;
+            min-width:118px;flex:none}
+.btn-linha{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.btn-nota{font-family:var(--f-dado);font-size:10px;color:var(--texto-2-claro);letter-spacing:.06em}
+.bullets{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.bullets li{display:flex;align-items:center;gap:12px;font-size:15px}
+
+@media (min-width:700px){
+  .resumo-grid{grid-template-columns:repeat(2,1fr)}
+  .res-campo:nth-child(odd){border-right:1px dotted var(--tinta-fraca)}
+  .vias{grid-template-columns:1fr 1fr}
+}
+@media (min-width:960px){
+  .hero-grid{grid-template-columns:1.5fr .85fr;gap:52px}
+  .grampo img{height:300px}
+  .campos{grid-template-columns:repeat(4,1fr)}
+  .check{grid-template-columns:1fr}
+  .check-duplo{display:grid;grid-template-columns:1fr 1fr}
+  .check-duplo .item:nth-child(odd){border-right:1px solid var(--tinta-fraca)}
+  .check-duplo .item:nth-child(2){border-top:0}
+  .secao{padding-block:64px}
+  .doc{padding-top:48px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+                       transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="v-mono" viewBox="0 0 130 148">
+    <path d="M0 0 H36 L65 50 L94 0 H130 L74.8 95 L77.5 108 L54.6 94 Z" fill="currentColor"/>
+    <path d="M54.6 94 L77.5 108 L86 148 Z" fill="currentColor"/>
+  </symbol>
+  <symbol id="v-duo" viewBox="0 0 130 148">
+    <path d="M0 0 H36 L65 50 L94 0 H130 L74.8 95 L77.5 108 L54.6 94 Z" fill="#1A1A1A"/>
+    <path d="M54.6 94 L77.5 108 L86 148 Z" fill="#FFC107"/>
+  </symbol>
+  <symbol id="v-inv" viewBox="0 0 130 148">
+    <path d="M0 0 H36 L65 50 L94 0 H130 L74.8 95 L77.5 108 L54.6 94 Z" fill="#FFFFFF"/>
+    <path d="M54.6 94 L77.5 108 L86 148 Z" fill="#FFC107"/>
+  </symbol>
+  <!-- Duotone grafite -> ambar. A curva tem 4 pontos, nao 2: com dois, o
+       mapeamento linear joga todo meio-tom para o ambar e a foto vira
+       mostarda chapada (testado lado a lado). Com quatro, a sombra fica
+       profunda e so a alta luz chega no ambar. -->
+  <filter id="duotone-veiga" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values="0.33 0.33 0.33 0 0
+                                         0.33 0.33 0.33 0 0
+                                         0.33 0.33 0.33 0 0
+                                         0    0    0    1 0"/>
+    <feComponentTransfer>
+      <feFuncR type="table" tableValues="0.06 0.20 0.50 1.0"/>
+      <feFuncG type="table" tableValues="0.06 0.16 0.36 0.757"/>
+      <feFuncB type="table" tableValues="0.07 0.10 0.12 0.10"/>
+    </feComponentTransfer>
+  </filter>
+</svg>
+
+<!-- ══════════════════ STYLE TILE ══════════════════ -->
+<section class="tile">
+  <div class="container">
+
+    <div class="tile-bloco">
+      <div class="rotulo" style="margin-bottom:8px">Direção 2 de 3</div>
+      <div class="h2" style="margin-bottom:14px">Comprovante de entrega</div>
+      <p class="corpo" style="max-width:62ch">A página imita o documento que fecha a entrega. As duas pontas do negócio viram as duas vias do mesmo recibo: a via clara é do lojista, a via escura é do entregador. Serrilha de canhoto no lugar de divisor, campo com rótulo no lugar de card, carimbo no lugar de selo de confiança inventado.</p>
+    </div>
+
+    <div class="tile-bloco">
+      <div class="rotulo" style="margin-bottom:20px">Paleta e papel de cada cor</div>
+      <div class="swatches">
+        <div><div class="sw-chip" style="background:#FFFFFF"></div><div class="sw-nome">Branco</div><div class="sw-hex">#FFFFFF</div><div class="sw-papel">O papel. Fundo dominante da página.</div></div>
+        <div><div class="sw-chip" style="background:#1A1A1A"></div><div class="sw-nome">Grafite</div><div class="sw-hex">#1A1A1A</div><div class="sw-papel">A tinta. E a via escura do recibo — a parte do entregador.</div></div>
+        <div><div class="sw-chip" style="background:#FFC107"></div><div class="sw-nome">Âmbar</div><div class="sw-hex">#FFC107</div><div class="sw-papel">Carimbo, fita e ação. Preenchimento, nunca texto no claro.</div></div>
+        <div><div class="sw-chip" style="background:#F4F4F4"></div><div class="sw-nome">Cinza claro</div><div class="sw-hex">#F4F4F4</div><div class="sw-papel">Segunda folha: bloco de resumo e item destacado.</div></div>
+        <div><div class="sw-chip" style="background:#5E5E5E"></div><div class="sw-nome">Cinza escuro</div><div class="sw-hex">#5E5E5E</div><div class="sw-papel">Rótulo de campo e texto secundário — 6,5:1 sobre branco.</div></div>
+        <div><div class="sw-chip" style="background:#DEDEDE"></div><div class="sw-nome">Papel gasto</div><div class="sw-hex">#DEDEDE</div><div class="sw-papel">Estado pressionado e desativado. Tom, não transparência.</div></div>
+      </div>
+      <p class="corpo-p" style="margin-top:18px">Âmbar sobre branco mede 1,6:1 — some. Por isso ele nunca é texto aqui: é carimbo, fita e preenchimento de botão, sempre com o rótulo em grafite (10,7:1).</p>
+    </div>
+
+    <div class="tile-bloco">
+      <div class="rotulo" style="margin-bottom:20px">Escala tipográfica</div>
+      <div class="escala">
+        <div class="escala-item"><span class="escala-tag">H1 · 104/40 · 900 it</span><span class="h1">Foto e assinatura</span></div>
+        <div class="escala-item"><span class="escala-tag">H2 · 40/26 · 900</span><span class="h2">Como funciona</span></div>
+        <div class="escala-item"><span class="escala-tag">H3 · 19/17 · 700</span><span class="h3">Rota fixa recorrente</span></div>
+        <div class="escala-item"><span class="escala-tag">Corpo · 17 · 1,65</span><span class="corpo">A central aciona um entregador disponível na região.</span></div>
+        <div class="escala-item"><span class="escala-tag">Pequeno · 13</span><span class="corpo-p">Desconto por volume no pacote mensal.</span></div>
+        <div class="escala-item"><span class="escala-tag">Rótulo · 11 · .28em</span><span class="rotulo">Região de coleta</span></div>
+        <div class="escala-item"><span class="escala-tag">Valor · 15 · mono</span><span class="dado">Zona Leste, São Paulo</span></div>
+      </div>
+      <p class="corpo-p" style="margin-top:6px">Rótulo com tracking de 0,28em — mais largo que nas outras direções, imitando etiqueta de formulário oficial. Corpo em 1,65 de entrelinha: ar de documento legível, não de painel denso.</p>
+    </div>
+
+    <div class="tile-bloco">
+      <div class="rotulo" style="margin-bottom:20px">Botões</div>
+      <div class="btn-linha">
+        <button class="btn btn-1">Solicitar entregas</button>
+        <button class="btn btn-2">Seja um entregador</button>
+        <button class="btn btn-1 btn-off">Enviando</button>
+        <span class="btn-nota">clique e segure — o botão afunda como carimbo batendo</span>
+      </div>
+    </div>
+
+    <div class="tile-bloco">
+      <div class="rotulo" style="margin-bottom:20px">O V como carimbo e marca de conferência</div>
+      <div style="display:flex;flex-wrap:wrap;gap:34px;align-items:center;margin-bottom:24px">
+        <span class="carimbo">
+          <svg width="20" height="23" aria-hidden="true"><use href="#v-mono"/></svg>
+          <span class="rotulo">Confirmado</span>
+        </span>
+        <span class="corpo-p" style="max-width:30ch">Moldura reta com o canto cortado a 30° — o ângulo do próprio V. Selo redondo seria de outra marca.</span>
+      </div>
+      <ul class="bullets">
+        <li><svg class="v-marca" width="11" height="12.5" aria-hidden="true"><use href="#v-mono"/></svg> Entrega avulsa, sem contrato</li>
+        <li><svg class="v-marca" width="11" height="12.5" aria-hidden="true"><use href="#v-mono"/></svg> Rota fixa com desconto por volume</li>
+        <li><svg class="v-marca" width="11" height="12.5" aria-hidden="true"><use href="#v-mono"/></svg> Confirmação com foto e assinatura</li>
+      </ul>
+      <p class="corpo-p" style="margin-top:16px">Sem marca-d'água gigante: papel não tem logo atrás. Aqui o V só aparece pequeno e funcional.</p>
+      <div class="serrilha" style="margin-top:22px"></div>
+      <p class="corpo-p" style="margin-top:10px">Serrilha de canhoto — o divisor de seção do site inteiro.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header class="topo">
+  <div class="container topo-in">
+    <a class="marca" href="#">
+      <svg width="26" height="30" aria-hidden="true"><use href="#v-duo"/></svg>
+      <span class="marca-txt">
+        <span class="marca-nome">VEIGA</span>
+        <span class="marca-desc">TRANSPORTES</span>
+      </span>
+    </a>
+    <nav class="nav">
+      <a href="#">Para negócios</a>
+      <a href="#">Para entregador</a>
+      <a href="#">Área de atuação</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ══════════════════ HERO — O DOCUMENTO ══════════════════ -->
+<section class="hero">
+  <div class="container doc">
+    <div class="doc-num">
+      <span class="dado">Veiga Transportes</span>
+      <span class="dado">Entrega sob demanda</span>
+      <span class="dado">Zona Leste · SP</span>
+    </div>
+
+    <div class="hero-grid">
+      <div>
+        <h1 class="h1">Toda entrega fecha com foto e assinatura.</h1>
+        <p class="corpo" style="margin-top:24px">Central de entregadores sob demanda para o pequeno comércio da Zona Leste. Você pede, a gente aciona quem está perto — e você recebe a prova de que chegou.</p>
+      </div>
+      <figure class="grampo" style="margin:0">
+        <img src="../src/assets/fotos/hero-faixa.webp" alt="Entregador de bicicleta com baú atravessando a faixa">
+        <figcaption>anexo · entrega em rota</figcaption>
+      </figure>
+    </div>
+
+    <div class="serrilha"></div>
+    <div class="campos">
+      <div class="campo"><span class="rotulo">Modalidade</span><span class="dado">Avulsa · Rota fixa</span></div>
+      <div class="campo"><span class="rotulo">Veículo</span><span class="dado">Moto · Bike · Carro</span></div>
+      <div class="campo"><span class="rotulo">Região</span><span class="dado">Zona Leste, SP</span></div>
+      <div class="campo"><span class="rotulo">Atendimento</span><span class="dado">Seg a sáb, comercial</span></div>
+    </div>
+    <div class="serrilha"></div>
+
+    <div class="abas">
+      <a class="btn btn-1" href="#">Solicitar entregas</a>
+      <a class="btn btn-2" href="#">Seja um entregador</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ PARA QUEM É ══════════════════ -->
+<section class="secao" style="background:var(--branco)">
+  <div class="container">
+    <div class="secao-cab">
+      <h2 class="h2">Para quem é</h2>
+      <span class="rotulo">Marque o seu caso</span>
+    </div>
+    <div class="check">
+      <div class="item item-topo">
+        <span class="caixa caixa-on"><svg width="11" height="12.5" style="color:var(--ambar)" aria-hidden="true"><use href="#v-mono"/></svg></span>
+        <div>
+          <span class="item-nome">E-commerce local</span>
+          <p class="item-desc">Vende pelo Instagram ou por marketplace e precisa entregar no mesmo dia, sem manter entregador na folha. É o caso mais comum de quem chega aqui.</p>
+          <span class="item-tag">Avulsa ou rota fixa</span>
+        </div>
+      </div>
+      <div class="check-duplo">
+        <div class="item">
+          <span class="caixa"></span>
+          <div>
+            <span class="item-nome">Farmácia</span>
+            <p class="item-desc">Receita e medicamento que não podem esperar o dia seguinte.</p>
+            <span class="item-tag">Urgência</span>
+          </div>
+        </div>
+        <div class="item">
+          <span class="caixa"></span>
+          <div>
+            <span class="item-nome">Pet shop</span>
+            <p class="item-desc">Ração e volume pesado, que pedem carro em vez de moto.</p>
+            <span class="item-tag">Carro</span>
+          </div>
+        </div>
+        <div class="item">
+          <span class="caixa"></span>
+          <div>
+            <span class="item-nome">Floricultura</span>
+            <p class="item-desc">Arranjo com hora marcada, entregue de pé e sem sacudida no caminho.</p>
+            <span class="item-tag">Hora marcada</span>
+          </div>
+        </div>
+        <div class="item">
+          <span class="caixa"></span>
+          <div>
+            <span class="item-nome">Restaurante</span>
+            <p class="item-desc">Reforço nos horários de pico, sem contratar entregador fixo para um pico que dura duas horas.</p>
+            <span class="item-tag">Pico</span>
+          </div>
+        </div>
+        <div class="item">
+          <span class="caixa"></span>
+          <div>
+            <span class="item-nome">Conveniência</span>
+            <p class="item-desc">Pedido pequeno e repetido, que fecha melhor como rota.</p>
+            <span class="item-tag">Rota fixa</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ RESUMO DO RECIBO ══════════════════ -->
+<section class="secao" style="background:var(--claro)">
+  <div class="container">
+    <div class="secao-cab">
+      <h2 class="h2">O que já é certo</h2>
+      <span class="rotulo">Sem número inventado</span>
+    </div>
+    <div class="resumo">
+      <div class="resumo-grid">
+        <div class="res-campo"><span class="rotulo">Modalidades</span><span class="res-val">02</span></div>
+        <div class="res-campo"><span class="rotulo">Tipos de veículo</span><span class="res-val">03</span></div>
+        <div class="res-campo"><span class="rotulo">Base de operação</span><span class="res-val">Vila Regina · ZL</span></div>
+        <div class="res-campo"><span class="rotulo">Atendimento</span><span class="res-val">Seg–Sáb</span></div>
+      </div>
+      <div class="res-conf">
+        <div>
+          <span class="rotulo" style="display:block;margin-bottom:8px">Conferência</span>
+          <p class="corpo" style="margin:0;max-width:44ch">Toda entrega fecha com foto e assinatura de quem recebeu. É o comprovante que você recebe de volta.</p>
+        </div>
+        <span class="carimbo">
+          <svg width="20" height="23" aria-hidden="true"><use href="#v-mono"/></svg>
+          <span class="rotulo">Confirmado</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ AS DUAS VIAS ══════════════════ -->
+<section class="secao" style="background:var(--branco);padding-top:0">
+  <div class="container">
+    <div class="vias">
+      <div class="via via-a">
+        <span class="rotulo">Via do lojista</span>
+        <p class="h3">Você tem o que entregar.</p>
+        <p class="corpo" style="margin:0">Peça uma entrega avulsa ou contrate uma rota fixa com desconto por volume.</p>
+        <a class="btn btn-1" href="#" style="margin-top:6px">Solicitar entregas</a>
+      </div>
+      <div class="via via-b via-escura">
+        <span class="rotulo">Via do entregador</span>
+        <p class="h3">Você tem moto, bike ou carro.</p>
+        <p class="corpo" style="margin:0">Receba por corrida ou por rota, sem precisar captar cliente sozinho.</p>
+        <a class="btn btn-2" href="#" style="margin-top:6px;border-color:var(--ambar);color:var(--branco)">Quero me cadastrar</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

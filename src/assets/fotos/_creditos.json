@@ -1,0 +1,98 @@
+[
+  {
+    "arquivo": "hero-esquina.webp",
+    "origem": "entrega-urbana/entrega-urbana-pexels-005.jpg",
+    "uso": "hero",
+    "autor": "RDNE Stock project",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/courier-driving-a-motorcycle-7363190/"
+  },
+  {
+    "arquivo": "hero-faixa.webp",
+    "origem": "entregador-bike/entregador-bike-pexels-005.jpg",
+    "uso": "hero",
+    "autor": "MART  PRODUCTION",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/man-on-a-bicycle-crossing-the-road-7706489/"
+  },
+  {
+    "arquivo": "moto-panning.webp",
+    "origem": "entrega-urbana/entrega-urbana-pexels-001.jpg",
+    "uso": "faixa",
+    "autor": "Francisco Ferreira",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/man-riding-motorcycle-on-the-road-13311393/"
+  },
+  {
+    "arquivo": "moto-pb.webp",
+    "origem": "entrega-urbana/entrega-urbana-pexels-015.jpg",
+    "uso": "faixa",
+    "autor": "Alex Dos Santos",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/dynamic-black-and-white-motorcycle-delivery-photo-29218745/"
+  },
+  {
+    "arquivo": "moto-rua.webp",
+    "origem": "entrega-urbana/entrega-urbana-pexels-019.jpg",
+    "uso": "card",
+    "autor": "Ali  Alcántara",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/a-delivery-man-riding-a-motorcycle-on-road-12203654/"
+  },
+  {
+    "arquivo": "moto-comercio.webp",
+    "origem": "entrega-urbana/entrega-urbana-pexels-009.jpg",
+    "uso": "card",
+    "autor": "UMUT   🆁🅰🆆",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/man-riding-on-a-motorbike-20496224/"
+  },
+  {
+    "arquivo": "moto-movimento.webp",
+    "origem": "entregador-moto/entregador-moto-pexels-013.jpg",
+    "uso": "card",
+    "autor": "Francisco Ferreira",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/man-riding-motorcycle-on-the-road-13311393/"
+  },
+  {
+    "arquivo": "bike-aerea.webp",
+    "origem": "entregador-bike/entregador-bike-pexels-011.jpg",
+    "uso": "card",
+    "autor": "Jan van der Wolf",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/courier-bicyclist-with-green-backpack-on-cobbled-street-28721167/"
+  },
+  {
+    "arquivo": "bike-calcada.webp",
+    "origem": "entregador-bike/entregador-bike-pexels-009.jpg",
+    "uso": "card",
+    "autor": "MART  PRODUCTION",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/man-carrying-a-yellow-bag-7706590/"
+  },
+  {
+    "arquivo": "comercio-bike.webp",
+    "origem": "mercearia-bairro/mercearia-bairro-pexels-005.jpg",
+    "uso": "faixa",
+    "autor": "João Saplak",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/a-bicycle-parked-on-the-sidewalk-by-the-shop-25255016/"
+  },
+  {
+    "arquivo": "comercio-toldo.webp",
+    "origem": "mercearia-bairro/mercearia-bairro-pexels-001.jpg",
+    "uso": "card",
+    "autor": "Joaquin Carfagna",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/produce-store-display-on-the-sidewalk-17626465/"
+  },
+  {
+    "arquivo": "comercio-calcada.webp",
+    "origem": "mercearia-bairro/mercearia-bairro-pexels-013.jpg",
+    "uso": "card",
+    "autor": "Joaquin Carfagna",
+    "licenca": "Pexels License (uso comercial, sem atribuicao obrigatoria)",
+    "fonte": "https://www.pexels.com/photo/grocery-store-in-city-17159078/"
+  }
+]

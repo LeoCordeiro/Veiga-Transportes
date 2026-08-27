@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veiga Transportes — Direção 3: Traçado da Rota</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,700;0,900;1,900&family=IBM+Plex+Mono:wght@500;700&family=IBM+Plex+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   DIREÇÃO 3 — TRAÇADO DA ROTA
+   Uma linha nasce na ponta âmbar do V e desce costurando a página.
+   Cada seção é uma parada. A linha se desenha conforme o scroll.
+   Alternância real de fundo — o conjunto fecha em ~50/50.
+
+   A linha passa no teste do bisturi: remover tira informação de posição
+   (onde estou no percurso), não só enfeite.
+
+   NOTA DE GEOMETRIA: todo SVG de rota tem tamanho FIXO em px e viewBox
+   1:1 com esse tamanho. Nada de preserveAspectRatio="none" — esticar o
+   viewBox destrói o ângulo de 30°, que é justamente o que amarra a linha
+   à marca. Se a seção cresce, o trecho vertical cresce por CSS; o cotovelo
+   diagonal nunca deforma.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root{
+  --grafite:#1A1A1A; --ambar:#FFC107; --cinza:#9A9A9A; --cinza-2:#8A8A8A;
+  --claro:#F4F4F4; --branco:#FFFFFF;
+  --texto-2-escuro:#9A9A9A; --texto-2-claro:#5E5E5E;
+  --sup-1:#212121; --sup-2:#2A2A2A; --sup-3:#333333; --fio:#2E2E2E;
+  --papel-2:#EAEAEA; --papel-3:#DEDEDE; --tinta-fraca:rgba(26,26,26,.16);
+  --f-display:'Archivo',system-ui,sans-serif;
+  --f-corpo:'IBM Plex Sans',system-ui,sans-serif;
+  --f-dado:'IBM Plex Mono',ui-monospace,monospace;
+  --raio:2px; --secao-y:48px; --largura:1160px; --gutter:clamp(20px,5vw,56px);
+  --swift-out:cubic-bezier(.16,1,.3,1);
+  --snap-in:cubic-bezier(.34,1.56,.64,1);
+  --cut:cubic-bezier(.65,0,.35,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--grafite);color:var(--branco);font-family:var(--f-corpo);-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+.container{max-width:var(--largura);margin-inline:auto;padding-inline:var(--gutter)}
+:focus-visible{outline:2px solid var(--branco);outline-offset:2px}
+.bloco-claro :focus-visible{outline-color:var(--grafite)}
+
+/* ── Escala tipográfica ───────────────────────────────────────────────
+   A maior das três (112px) e a única com um nível a mais: o numeral de
+   parada em mono grande. A estrutura alterna bloco a bloco, então o ritmo
+   tipográfico precisa de mais amplitude para acompanhar. */
+h1,h2,h3{margin:0}
+.h1{font-family:var(--f-display);font-weight:900;font-style:italic;
+    font-size:clamp(2.6rem,1.6rem+4.8vw,7rem);line-height:.9;letter-spacing:-.015em}
+.h2{font-family:var(--f-display);font-weight:900;
+    font-size:clamp(1.6875rem,1.4rem+1.3vw,2.875rem);line-height:1;letter-spacing:-.01em}
+.h3{font-family:var(--f-corpo);font-weight:700;font-size:clamp(1.125rem,1.05rem+.35vw,1.3125rem);
+    line-height:1.2;letter-spacing:-.005em}
+.corpo{font-size:clamp(.9375rem,.92rem+.1vw,1rem);line-height:1.55;color:var(--texto-2-escuro)}
+.corpo-p{font-size:13px;line-height:1.4;color:var(--cinza-2)}
+.rotulo{font-weight:700;font-size:clamp(11px,10.5px+.1vw,12px);line-height:1;letter-spacing:.24em;
+        text-transform:uppercase;color:var(--texto-2-escuro)}
+.dado{font-family:var(--f-dado);font-weight:500;font-size:14px;line-height:1.3}
+/* Numeral de parada — o nível novo desta direção */
+.parada-num{font-family:var(--f-dado);font-weight:700;
+            font-size:clamp(2rem,1.4rem+2.4vw,4rem);line-height:1;letter-spacing:-.01em}
+.bloco-claro{background:var(--claro);color:var(--grafite)}
+.bloco-claro .corpo,.bloco-claro .corpo-p{color:var(--texto-2-claro)}
+.bloco-claro .rotulo{color:var(--texto-2-claro)}
+.bloco-claro .dado{color:var(--grafite)}
+
+/* ── Botões — acoplados ao nó da rota ─────────────────────────────────
+   Único dos três com o corte de canto no próprio botão, no ângulo de 30°.
+   No hover quem responde é o nó, não a caixa: a rota reage. */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:12px;
+     min-height:52px;padding:0 26px;border:0;border-radius:var(--raio);
+     font-family:var(--f-corpo);font-weight:700;font-size:14px;letter-spacing:.04em;
+     text-transform:uppercase;text-decoration:none;cursor:pointer;
+     clip-path:polygon(0 0,100% 0,100% 100%,15px 100%,0 calc(100% - 26px));
+     transition:background-color 160ms var(--swift-out)}
+.btn .no{width:7px;height:7px;background:currentColor;flex:none;
+         transition:transform 400ms var(--snap-in)}
+.btn:hover .no{transform:scale(1.45)}
+.btn:active .no{transform:scale(1)}
+.btn-1{background:var(--ambar);color:var(--grafite)}
+.btn-1:hover{background:#FFCB2B}
+.btn-2{background:transparent;color:var(--branco);border:1.5px solid var(--ambar)}
+.btn-2:hover{background:var(--sup-2)}
+.bloco-claro .btn-2{color:var(--grafite);border-color:var(--grafite)}
+.bloco-claro .btn-2:hover{background:var(--papel-2)}
+/* Fundo em sup-2: o cinza sobre #333 mede 4,49:1 e reprova. Medido. */
+.btn-off{background:var(--sup-2);color:var(--cinza);cursor:not-allowed;pointer-events:none}
+.btn-off .no{display:none}
+
+/* ── A rota ───────────────────────────────────────────────────────────
+   Tamanho fixo, viewBox 1:1, ângulo preservado. O dashoffset é revelado
+   por IntersectionObserver, não por timer: a linha acompanha a leitura. */
+.rota path{fill:none;stroke:var(--ambar);stroke-width:2;stroke-linecap:square;
+           stroke-dasharray:var(--len);stroke-dashoffset:var(--len);
+           transition:stroke-dashoffset 1100ms var(--swift-out)}
+.rota.tracada path{stroke-dashoffset:0}
+.bloco-claro .rota path{stroke:var(--grafite)}
+.rota rect{fill:var(--ambar);opacity:0;transition:opacity 220ms linear 500ms}
+.rota.tracada rect{opacity:1}
+.bloco-claro .rota rect{fill:var(--grafite)}
+
+.no-parada{width:11px;height:11px;background:var(--ambar);flex:none;
+           transform:scale(.4);opacity:0;
+           transition:transform 380ms var(--snap-in),opacity 200ms linear}
+.visivel .no-parada{transform:scale(1);opacity:1}
+.bloco-claro .no-parada{background:var(--grafite)}
+
+/* ── Header ───────────────────────────────────────────────────────────*/
+.topo{position:sticky;top:0;z-index:30;background:transparent;
+      border-bottom:1px solid transparent;
+      transition:background-color 220ms var(--swift-out),border-color 220ms var(--swift-out)}
+.topo.solido{background:var(--grafite);border-bottom-color:var(--fio)}
+.topo-in{display:flex;align-items:center;justify-content:space-between;height:64px}
+.marca{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--branco)}
+.marca-txt{display:flex;flex-direction:column;gap:2px}
+.marca-nome{font-family:var(--f-display);font-weight:900;font-style:italic;font-size:19px;
+            line-height:.9;letter-spacing:-.015em}
+.marca-desc{font-weight:700;font-size:8px;line-height:1;letter-spacing:.4em;color:var(--ambar)}
+.nav{display:flex;gap:24px}
+.nav a{text-decoration:none;color:var(--texto-2-escuro);font-weight:700;font-size:11px;
+       letter-spacing:.22em;text-transform:uppercase;transition:color 160ms var(--swift-out)}
+.nav a:hover{color:var(--branco)}
+/* A nav sai da barra no celular. Em 390px ela empurrava o header e
+   estourava a pagina em 58px (medido, nao estimado). No site real vira
+   menu; no preview, o que decide a direcao e o hero, nao o menu. */
+@media (max-width:759px){ .nav{display:none} }
+
+/* ── Hero ─────────────────────────────────────────────────────────────
+   A rota sai da ponta do V que fica ao lado de "PARADA 00" — o mesmo
+   ponto âmbar da logo — e desce até a borda inferior da seção. */
+.hero{position:relative;overflow:hidden;background:var(--grafite);padding-block:44px 56px}
+.hero-in{position:relative}
+.rota-hero{position:absolute;left:-2px;top:16px;z-index:1;pointer-events:none}
+.hero-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr;gap:32px}
+.hero-txt{padding-left:34px}
+.hero-inicio{display:flex;align-items:center;gap:12px;margin-bottom:26px;margin-left:-34px}
+.hero-inicio .no-parada{margin-left:6px}
+.hero-inicio .dado{color:var(--ambar);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.hero .corpo{max-width:36ch;margin-block:22px 30px;font-size:16px}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:12px}
+.hero-foto{position:relative;height:240px}
+.hero-foto img{width:100%;height:100%;object-fit:cover;filter:url(#duotone-veiga)}
+.hero-foto::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(26,26,26,.8),rgba(26,26,26,.1) 50%,rgba(26,26,26,.62))}
+
+/* ── Régua de fatos — a rota vira horizontal ──────────────────────────
+   Troca de eixo de propósito: o padrão vertical cansaria se durasse a
+   página inteira. A linha corre ACIMA dos marcos, com o tique descendo
+   até o valor — nunca cruzando o texto. */
+.secao{position:relative;padding-block:var(--secao-y)}
+.secao-cab{display:flex;align-items:baseline;gap:16px;margin-bottom:30px;flex-wrap:wrap}
+.regua{position:relative;padding-top:30px}
+.rota-regua{position:absolute;left:0;top:0;width:100%;height:24px;pointer-events:none}
+.marcos{display:grid;grid-template-columns:repeat(2,1fr);gap:26px 12px}
+.marco{display:grid;gap:7px;justify-items:start;text-align:left}
+.marco-val{font-family:var(--f-dado);font-weight:700;
+           font-size:clamp(1.25rem,1.1rem+.6vw,1.75rem);line-height:1}
+.marco .rotulo{letter-spacing:.2em}
+.marco-conf{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:14px;
+            margin-top:12px;padding:18px 22px;background:var(--grafite);color:var(--branco);
+            clip-path:polygon(0 0,100% 0,100% calc(100% - 18px),calc(100% - 10px) 100%,0 100%)}
+.marco-conf .rotulo{color:var(--ambar)}
+.marco-conf p{margin:0;font-size:14px;line-height:1.4}
+
+/* ── Paradas ──────────────────────────────────────────────────────────
+   Zigue-zague com espaçamento vertical desigual. Não é ladder mecânico:
+   com todas as paradas à mesma distância, voltaria a ser uma lista de
+   cards com enfeite de linha por cima. */
+.paradas{position:relative;padding-left:34px}
+.rota-paradas{position:absolute;left:-2px;top:0;pointer-events:none;z-index:1}
+.parada{position:relative;z-index:2;display:grid;grid-template-columns:auto 1fr;gap:16px;
+        align-items:start;padding-block:18px}
+.parada:nth-child(2){padding-block:26px}
+.parada:nth-child(4){padding-block:30px}
+.parada:nth-child(6){padding-bottom:6px}
+.parada-marca{position:absolute;left:-34px;top:24px;display:flex;width:11px;justify-content:center}
+.parada-corpo{display:grid;gap:5px}
+.parada-nome{font-family:var(--f-corpo);font-weight:700;font-size:18px;line-height:1.25}
+.parada-desc{font-size:14px;line-height:1.5;color:var(--texto-2-escuro)}
+.parada-tag{font-family:var(--f-dado);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+            color:var(--cinza-2)}
+.parada .parada-num{color:var(--ambar);opacity:.9;padding-top:2px}
+
+/* ── Style tile ───────────────────────────────────────────────────────*/
+.tile{background:var(--sup-1);border-bottom:1px solid var(--fio)}
+.tile-bloco{padding-block:32px;border-top:1px solid var(--fio)}
+.tile-bloco:first-child{border-top:0}
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.sw-chip{height:64px;border-radius:var(--raio);border:1px solid var(--fio)}
+.sw-nome{margin-top:10px;font-weight:700;font-size:12px;letter-spacing:.06em}
+.sw-hex{font-family:var(--f-dado);font-size:11px;color:var(--cinza-2);margin-top:2px}
+.sw-papel{font-size:11px;line-height:1.35;color:var(--texto-2-escuro);margin-top:6px}
+.escala>*{margin-bottom:16px}
+.escala-item{display:flex;flex-wrap:wrap;align-items:baseline;gap:14px}
+.escala-tag{font-family:var(--f-dado);font-size:10px;color:var(--cinza-2);letter-spacing:.08em;
+            min-width:126px;flex:none}
+.btn-linha{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.btn-nota{font-family:var(--f-dado);font-size:10px;color:var(--cinza-2);letter-spacing:.06em}
+.bullets{list-style:none;margin:0;padding:0;display:grid;gap:11px}
+.bullets li{display:flex;align-items:center;gap:12px;font-size:15px}
+.demo-rota{border:1px solid var(--fio);border-radius:var(--raio);background:var(--grafite);
+           padding:18px 20px}
+.v-marca{display:inline-block;flex:none;vertical-align:-.12em}
+
+@media (min-width:700px){
+  .marcos{grid-template-columns:repeat(4,1fr)}
+}
+@media (min-width:960px){
+  .hero{padding-block:76px 84px}
+  .hero-grid{grid-template-columns:1.08fr .92fr;gap:44px;align-items:center}
+  .hero-foto{height:440px}
+  .secao{padding-block:64px}
+  /* Desktop: a linha desce pelo MEIO e as paradas alternam os dois lados.
+     É o zigue-zague de verdade — no mobile ela fica na lateral, porque
+     390px de largura não comportam duas colunas. */
+  .paradas{padding-left:0}
+  .rota-paradas{left:50%;transform:translateX(-1px)}
+  .parada{grid-template-columns:auto 1fr;width:calc(50% - 40px)}
+  .parada:nth-child(odd){margin-left:0;text-align:right;direction:rtl}
+  .parada:nth-child(odd) .parada-corpo{direction:ltr;text-align:right}
+  .parada:nth-child(odd) .parada-marca{left:auto;right:-46px}
+  .parada:nth-child(even){margin-left:calc(50% + 40px);margin-top:-38px}
+  .parada:nth-child(even) .parada-marca{left:-46px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+                       transition-duration:.01ms!important}
+  /* A linha aparece inteira desde o load — nunca escondida, porque ela
+     carrega informação de posição, não só efeito. */
+  .rota path{stroke-dashoffset:0!important}
+  .rota rect{opacity:1!important}
+  .no-parada{transform:scale(1)!important;opacity:1!important}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="v-mono" viewBox="0 0 130 148">
+    <path d="M0 0 H36 L65 50 L94 0 H130 L74.8 95 L77.5 108 L54.6 94 Z" fill="currentColor"/>
+    <path d="M54.6 94 L77.5 108 L86 148 Z" fill="currentColor"/>
+  </symbol>
+  <symbol id="v-inv" viewBox="0 0 130 148">
+    <path d="M0 0 H36 L65 50 L94 0 H130 L74.8 95 L77.5 108 L54.6 94 Z" fill="#FFFFFF"/>
+    <path d="M54.6 94 L77.5 108 L86 148 Z" fill="#FFC107"/>
+  </symbol>
+  <!-- Duotone grafite -> âmbar. A curva tem 4 pontos, não 2: com dois, o
+       mapeamento linear joga todo meio-tom para o âmbar e a foto vira
+       mostarda chapada (testado lado a lado). Com quatro, a sombra fica
+       profunda e só a alta luz chega no âmbar. -->
+  <filter id="duotone-veiga" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values="0.33 0.33 0.33 0 0
+                                         0.33 0.33 0.33 0 0
+                                         0.33 0.33 0.33 0 0
+                                         0    0    0    1 0"/>
+    <feComponentTransfer>
+      <feFuncR type="table" tableValues="0.06 0.20 0.50 1.0"/>
+      <feFuncG type="table" tableValues="0.06 0.16 0.36 0.757"/>
+      <feFuncB type="table" tableValues="0.07 0.10 0.12 0.10"/>
+    </feComponentTransfer>
+  </filter>
+</svg>
+
+<!-- ══════════════════ STYLE TILE ══════════════════ -->
+<section class="tile">
+  <div class="container">
+
+    <div class="tile-bloco">
+      <div class="rotulo" style="color:var(--ambar);margin-bottom:8px">Direção 3 de 3</div>
+      <div class="h2" style="margin-bottom:14px">Traçado da rota</div>
+      <p class="corpo" style="max-width:62ch">Uma linha nasce na ponta âmbar do V e desce costurando a página inteira. Cada seção é uma parada, cada parada tem um nó, e a linha se desenha conforme você rola. O fundo alterna com ela: a rota cruza do escuro para o claro e volta.</p>
+    </div>
+
+    <div class="tile-bloco">
+      <div class="rotulo" style="margin-bottom:20px">Paleta e papel de cada cor</div>
+      <div class="swatches">
+        <div><div class="sw-chip" style="background:#1A1A1A"></div><div class="sw-nome">Grafite</div><div class="sw-hex">#1A1A1A</div><div class="sw-papel">Metade escura do percurso: hero, paradas, chegada.</div></div>
+        <div><div class="sw-chip" style="background:#F4F4F4"></div><div class="sw-nome">Cinza claro</div><div class="sw-hex">#F4F4F4</div><div class="sw-papel">Metade clara. Aqui a linha troca de cor para continuar visível.</div></div>
+        <div><div class="sw-chip" style="background:#FFC107"></div><div class="sw-nome">Âmbar</div><div class="sw-hex">#FFC107</div><div class="sw-papel">A linha e os nós sobre grafite. Some no claro — lá a linha vira grafite.</div></div>
+        <div><div class="sw-chip" style="background:#9A9A9A"></div><div class="sw-nome">Cinza</div><div class="sw-hex">#9A9A9A</div><div class="sw-papel">Secundário sobre grafite — 6,2:1.</div></div>
+        <div><div class="sw-chip" style="background:#5E5E5E"></div><div class="sw-nome">Cinza escuro</div><div class="sw-hex">#5E5E5E</div><div class="sw-papel">Secundário nos trechos claros — 6,5:1.</div></div>
+        <div><div class="sw-chip" style="background:#212121"></div><div class="sw-nome">Superfície</div><div class="sw-hex">#212121</div><div class="sw-papel">Parada elevada dentro do trecho escuro.</div></div>
+      </div>
+      <p class="corpo-p" style="margin-top:18px">O rótulo de parada nunca é âmbar: como o fundo alterna, ele acabaria caindo num trecho claro e medindo 1,5:1. Rótulo é sempre branco ou grafite, conforme a metade.</p>
+    </div>
+
+    <div class="tile-bloco">
+      <div class="rotulo" style="margin-bottom:20px">Escala tipográfica</div>
+      <div class="escala">
+        <div class="escala-item"><span class="escala-tag">H1 · 112/42 · 900 it</span><span class="h1">Nós traçamos</span></div>
+        <div class="escala-item"><span class="escala-tag">Parada · 64/32 mono</span><span class="parada-num" style="color:var(--ambar)">03</span></div>
+        <div class="escala-item"><span class="escala-tag">H2 · 46/27 · 900</span><span class="h2">Como funciona</span></div>
+        <div class="escala-item"><span class="escala-tag">H3 · 21/18 · 700</span><span class="h3">Rota fixa recorrente</span></div>
+        <div class="escala-item"><span class="escala-tag">Corpo · 16 · 400</span><span class="corpo">A central aciona um entregador disponível na região.</span></div>
+        <div class="escala-item"><span class="escala-tag">Pequeno · 13</span><span class="corpo-p">Desconto por volume no pacote mensal.</span></div>
+        <div class="escala-item"><span class="escala-tag">Rótulo · 12 · .24em</span><span class="rotulo">Parada 03</span></div>
+      </div>
+      <p class="corpo-p" style="margin-top:6px">É a escala mais ampla das três, e a única com um nível a mais — o numeral de parada. A estrutura alterna bloco a bloco, então o ritmo tipográfico precisa de amplitude para acompanhar.</p>
+    </div>
+
+    <div class="tile-bloco">
+      <div class="rotulo" style="margin-bottom:20px">Botões</div>
+      <div class="btn-linha">
+        <button class="btn btn-1"><span class="no"></span>Solicitar entregas</button>
+        <button class="btn btn-2"><span class="no"></span>Seja um entregador</button>
+        <button class="btn btn-1 btn-off">Enviando</button>
+        <span class="btn-nota">passe o cursor — quem responde é o nó, não a caixa</span>
+      </div>
+      <p class="corpo-p" style="margin-top:16px">O canto inferior esquerdo é cortado a 30°, o ângulo do V. O quadrado à esquerda do rótulo é o nó que conecta o botão à rota. Botão desativado perde o nó: fica desconectado da linha.</p>
+    </div>
+
+    <div class="tile-bloco">
+      <div class="rotulo" style="margin-bottom:20px">O V como origem e como nó</div>
+      <ul class="bullets">
+        <li><svg class="v-marca" width="11" height="12.5" style="color:var(--ambar)" aria-hidden="true"><use href="#v-mono"/></svg> Entrega avulsa, sem contrato</li>
+        <li><svg class="v-marca" width="11" height="12.5" style="color:var(--ambar)" aria-hidden="true"><use href="#v-mono"/></svg> Rota fixa com desconto por volume</li>
+        <li><svg class="v-marca" width="11" height="12.5" style="color:var(--ambar)" aria-hidden="true"><use href="#v-mono"/></svg> Confirmação com foto e assinatura</li>
+      </ul>
+      <div class="demo-rota" style="margin-top:20px">
+        <svg width="420" height="132" viewBox="0 0 420 132" style="max-width:100%" aria-hidden="true">
+          <path d="M6 8 L6 44 L52 124 L410 124" fill="none" stroke="#FFC107" stroke-width="2" stroke-linecap="square"/>
+          <rect x="1" y="3" width="10" height="10" fill="#FFC107"/>
+          <rect x="47" y="119" width="10" height="10" fill="#FFC107"/>
+          <rect x="405" y="119" width="10" height="10" fill="#FFC107"/>
+        </svg>
+      </div>
+      <p class="corpo-p" style="margin-top:10px">O cotovelo desce 80&nbsp;px e anda 46&nbsp;px: 46/80 = 0,577 — os 30° medidos nas arestas do próprio V. Nunca 45°, que não é ângulo desta marca. Não existe marca-d'água: a linha já é a assinatura contínua.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header class="topo" id="topo">
+  <div class="container topo-in">
+    <a class="marca" href="#">
+      <svg width="26" height="30" aria-hidden="true"><use href="#v-inv"/></svg>
+      <span class="marca-txt">
+        <span class="marca-nome">VEIGA</span>
+        <span class="marca-desc">TRANSPORTES</span>
+      </span>
+    </a>
+    <nav class="nav">
+      <a href="#">Para negócios</a>
+      <a href="#">Para entregador</a>
+      <a href="#">Área de atuação</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ══════════════════ HERO ══════════════════ -->
+<section class="hero">
+  <div class="container hero-in">
+    <!-- Tamanho fixo, viewBox 1:1. O cotovelo desce 104 e anda 60: 0,577. -->
+    <svg class="rota rota-hero" width="120" height="460" viewBox="0 0 120 460" aria-hidden="true">
+      <path d="M8 10 L8 150 L68 254 L68 460"/>
+    </svg>
+    <div class="hero-grid">
+      <div class="hero-txt">
+        <div class="hero-inicio">
+          <span class="no-parada"></span>
+          <span class="dado">Parada 00 · Zona Leste, SP</span>
+        </div>
+        <h1 class="h1">Todo pedido tem um caminho.<br>Nós traçamos.</h1>
+        <p class="corpo">Central de entregadores sob demanda para o pequeno comércio da Zona Leste. Você pede, a gente aciona quem está mais perto.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-1" href="#"><span class="no"></span>Solicitar entregas</a>
+          <a class="btn btn-2" href="#"><span class="no"></span>Seja um entregador</a>
+        </div>
+      </div>
+      <div class="hero-foto">
+        <img src="../src/assets/fotos/hero-esquina.webp" alt="Entregador de moto atravessando uma esquina">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ FAIXA DE FATOS — A ROTA VIRA HORIZONTAL ══════════════════ -->
+<section class="secao bloco-claro">
+  <div class="container">
+    <div class="secao-cab">
+      <h2 class="h2">O que já é certo</h2>
+      <span class="rotulo">Sem número inventado</span>
+    </div>
+    <div class="regua">
+      <svg class="rota rota-regua" preserveAspectRatio="none" viewBox="0 0 1000 24" aria-hidden="true">
+        <path d="M2 4 L998 4" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="marcos">
+        <div class="marco">
+          <span class="marco-val">02</span>
+          <span class="rotulo">Modalidades</span>
+          <span class="corpo-p">Avulsa e rota fixa</span>
+        </div>
+        <div class="marco">
+          <span class="marco-val">03</span>
+          <span class="rotulo">Veículos</span>
+          <span class="corpo-p">Moto, bike e carro</span>
+        </div>
+        <div class="marco">
+          <span class="marco-val">ZL</span>
+          <span class="rotulo">Base</span>
+          <span class="corpo-p">Vila Regina, São Paulo</span>
+        </div>
+        <div class="marco">
+          <span class="marco-val">Seg–Sáb</span>
+          <span class="rotulo">Atendimento</span>
+          <span class="corpo-p">Horário comercial</span>
+        </div>
+        <div class="marco-conf">
+          <svg class="v-marca" width="15" height="17" style="color:var(--ambar)" aria-hidden="true"><use href="#v-mono"/></svg>
+          <span class="rotulo">Confirmação</span>
+          <p>Toda entrega fecha com foto e assinatura de quem recebeu.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ PARA QUEM É — AS PARADAS ══════════════════ -->
+<section class="secao">
+  <div class="container">
+    <div class="secao-cab">
+      <h2 class="h2">Para quem é</h2>
+      <span class="rotulo">Seis paradas na rota</span>
+    </div>
+    <div class="paradas">
+      <svg class="rota rota-paradas" width="4" height="100%" viewBox="0 0 4 1000"
+           preserveAspectRatio="none" aria-hidden="true">
+        <path d="M2 0 L2 1000" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="parada">
+        <span class="parada-marca"><span class="no-parada"></span></span>
+        <span class="parada-num">01</span>
+        <div class="parada-corpo">
+          <span class="parada-nome">E-commerce local</span>
+          <p class="parada-desc">Vende pelo Instagram e precisa entregar no mesmo dia, sem entregador na folha.</p>
+          <span class="parada-tag">Avulsa ou rota fixa</span>
+        </div>
+      </div>
+      <div class="parada">
+        <span class="parada-marca"><span class="no-parada"></span></span>
+        <span class="parada-num">02</span>
+        <div class="parada-corpo">
+          <span class="parada-nome">Farmácia</span>
+          <p class="parada-desc">Receita e medicamento que não podem esperar o dia seguinte.</p>
+          <span class="parada-tag">Urgência</span>
+        </div>
+      </div>
+      <div class="parada">
+        <span class="parada-marca"><span class="no-parada"></span></span>
+        <span class="parada-num">03</span>
+        <div class="parada-corpo">
+          <span class="parada-nome">Floricultura</span>
+          <p class="parada-desc">Arranjo com hora marcada, entregue de pé e sem sacudida no caminho.</p>
+          <span class="parada-tag">Hora marcada</span>
+        </div>
+      </div>
+      <div class="parada">
+        <span class="parada-marca"><span class="no-parada"></span></span>
+        <span class="parada-num">04</span>
+        <div class="parada-corpo">
+          <span class="parada-nome">Pet shop</span>
+          <p class="parada-desc">Ração e volume pesado, que pedem carro em vez de moto.</p>
+          <span class="parada-tag">Carro</span>
+        </div>
+      </div>
+      <div class="parada">
+        <span class="parada-marca"><span class="no-parada"></span></span>
+        <span class="parada-num">05</span>
+        <div class="parada-corpo">
+          <span class="parada-nome">Restaurante</span>
+          <p class="parada-desc">Reforço nos horários de pico, sem contratar para um pico de duas horas.</p>
+          <span class="parada-tag">Pico</span>
+        </div>
+      </div>
+      <div class="parada">
+        <span class="parada-marca"><span class="no-parada"></span></span>
+        <span class="parada-num">06</span>
+        <div class="parada-corpo">
+          <span class="parada-nome">Conveniência</span>
+          <p class="parada-desc">Pedido pequeno e repetido, que fecha melhor como rota.</p>
+          <span class="parada-tag">Rota fixa</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* A linha se desenha conforme a leitura, e cada nó dá um pulso ao entrar.
+   threshold 0 com rootMargin negativo: com threshold alto, um bloco mais
+   alto que a viewport nunca dispara e a linha fica pela metade para sempre. */
+(function () {
+  var reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll('.rota path').forEach(function (p) {
+    p.style.setProperty('--len', p.getTotalLength());
+  });
+
+  function revelar(el) { el.classList.add('visivel', 'tracada'); }
+
+  if (reduzido) {
+    document.querySelectorAll('.rota, .parada, .hero-inicio').forEach(revelar);
+    return;
+  }
+
+  var obs = new IntersectionObserver(function (entradas) {
+    entradas.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      revelar(e.target);
+      obs.unobserve(e.target);
+    });
+  }, { threshold: 0, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.rota, .parada, .hero-inicio').forEach(function (e) { obs.observe(e); });
+
+  /* Rede de segurança: se o observer não disparar (aba oculta, painel sem
+     composição), a rota aparece assim mesmo. Melhor revelada sem animação
+     do que invisível para sempre. */
+  setTimeout(function () {
+    document.querySelectorAll('.rota, .parada, .hero-inicio').forEach(revelar);
+  }, 3000);
+
+  var topo = document.getElementById('topo');
+  var solido = function () { topo.classList.toggle('solido', window.scrollY > 8); };
+  solido();
+  addEventListener('scroll', solido, { passive: true });
+})();
+</script>
+
+</body>
+</html>

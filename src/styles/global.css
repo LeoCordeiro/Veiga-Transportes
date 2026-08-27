@@ -1,0 +1,286 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Estilo global — transcrição do preview aprovado (direção 3, Traçado da Rota).
+
+   Nenhum hex aqui: tudo sai das custom properties injetadas por
+   aplicarTokens(), em config/tokens.js. Hex em CSS de componente é bug.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--f-corpo);
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+.container {
+  max-width: var(--m-largura-conteudo);
+  margin-inline: auto;
+  padding-inline: var(--m-gutter);
+}
+
+/* ── Vuetify entra depois e ganha o empate ─────────────────────────────────
+   Com autoImport, o CSS de cada componente é injetado quando a view carrega —
+   ou seja, DEPOIS deste arquivo. Em empate de especificidade a ordem decide, e
+   o Vuetify vence. Dobrar a classe (.v-card.v-card) sobe a especificidade sem
+   precisar de !important e devolve o contrato visual.
+
+   E nada de prop `rounded`: ela gera border-radius !important e nem isto aqui
+   alcança. O raio vive só neste arquivo. */
+.v-card.v-card {
+  border-radius: var(--r-card);
+  background-color: transparent;
+}
+.v-btn.v-btn {
+  border-radius: var(--r-botao);
+  font-family: var(--f-corpo);
+  font-weight: var(--p-forte);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.v-field.v-field {
+  border-radius: var(--r-campo);
+}
+.v-chip.v-chip {
+  border-radius: var(--r-campo);
+  font-family: var(--f-dado);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+/* ── Escala tipográfica ────────────────────────────────────────────────────
+   112px no H1 contra 13px no corpo pequeno. Peso 900 no display contra 400 no
+   corpo — salto de 500, não de 200.
+
+   O itálico é exclusividade do H1. Repetido no H2 deixaria de ser gesto e
+   viraria textura. */
+.h1 {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: var(--p-display);
+  font-style: italic;
+  font-size: clamp(2.6rem, 1.6rem + 4.8vw, 7rem);
+  line-height: 0.9;
+  letter-spacing: -0.015em;
+}
+.h2 {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: var(--p-display);
+  font-size: clamp(1.6875rem, 1.4rem + 1.3vw, 2.875rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+.h3 {
+  margin: 0;
+  font-family: var(--f-corpo);
+  font-weight: var(--p-forte);
+  font-size: clamp(1.125rem, 1.05rem + 0.35vw, 1.3125rem);
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+}
+.corpo {
+  margin: 0;
+  font-size: clamp(0.9375rem, 0.92rem + 0.1vw, 1rem);
+  line-height: 1.55;
+}
+.corpo-p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Eco direto do descritor "TRANSPORTES" da logo, que é Archivo Bold com
+   letter-spacing 0.4em. Aqui fica em 0.24em porque a 11px o 0.4em quebra
+   a palavra em letras soltas. */
+.rotulo {
+  font-family: var(--f-corpo);
+  font-weight: var(--p-rotulo);
+  font-size: clamp(11px, 10.5px + 0.1vw, 12px);
+  line-height: 1;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+/* Mono é só para dado com função real: bairro, volume, horário, CNPJ, número
+   de parada. Mono decorativo é enfeite fingindo ser informação. */
+.dado {
+  font-family: var(--f-dado);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.3;
+}
+.numero {
+  font-family: var(--f-dado);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.parada-num {
+  font-family: var(--f-dado);
+  font-weight: 700;
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+/* Cor de texto secundário por contexto. São dois tokens porque um só não
+   sobrevive aos dois fundos: #9A9A9A dá 6,2:1 no grafite e 2,8:1 no branco. */
+.texto-2 {
+  color: var(--c-cinza);
+}
+.claro .texto-2,
+.v-theme--veigaClaro .texto-2 {
+  color: var(--c-cinza-escuro);
+}
+
+/* ── Seção ─────────────────────────────────────────────────────────────── */
+.secao {
+  position: relative;
+  padding-block: var(--m-secao-y);
+}
+@media (min-width: 960px) {
+  .secao {
+    padding-block: 64px;
+  }
+}
+.secao-cab {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+/* ── Recorte no ângulo da marca ────────────────────────────────────────────
+   30° da vertical, razão 0,577 — medida nas arestas do próprio V. Nunca 45°:
+   45° é a diagonal de qualquer marca. */
+.corte-v {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 10px) 100%, 0 100%);
+}
+.corte-v-esq {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 15px 100%, 0 calc(100% - 26px));
+}
+
+/* ── Foco ──────────────────────────────────────────────────────────────────
+   Sempre visível, e com cor que sobrevive ao fundo do bloco. Nunca só
+   mudança de fundo como único sinal de foco. */
+:focus-visible {
+  outline: 2px solid var(--c-branco);
+  outline-offset: 2px;
+}
+.v-theme--veigaClaro :focus-visible {
+  outline-color: var(--c-grafite);
+}
+
+/* Pular para o conteúdo. Com hash history o href="#conteudo" colidiria com a
+   rota, então o link é programático — ver AppHeader. */
+.pular {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 12px 18px;
+  background: var(--c-ambar);
+  color: var(--on-ambar);
+  font-weight: var(--p-forte);
+}
+.pular:focus {
+  left: 8px;
+  top: 8px;
+}
+
+/* ── Revelação por scroll ──────────────────────────────────────────────────
+   Fora do @media, .revela não tem estado inicial nenhum: quem está sem JS vê
+   o conteúdo normalmente, em vez de uma página em branco. */
+@media (prefers-reduced-motion: no-preference) {
+  .revela {
+    opacity: 0;
+    transform: translateY(var(--t-revela-desloc));
+    transition:
+      opacity var(--t-entrada) var(--t-swift-out) var(--atraso, 0ms),
+      transform var(--t-entrada) var(--t-swift-out) var(--atraso, 0ms);
+  }
+  .revela.dentro {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── A rota ────────────────────────────────────────────────────────────────
+   Todo SVG de rota tem tamanho FIXO em px e viewBox 1:1 com esse tamanho.
+   Nada de preserveAspectRatio="none" nos trechos com cotovelo: esticar o
+   viewBox destrói o ângulo de 30°, que é o que amarra a linha à marca. Só os
+   trechos retos podem esticar, e ainda assim com vector-effect para o traço
+   não engordar junto. */
+.rota path {
+  fill: none;
+  stroke: var(--c-ambar);
+  stroke-width: 2;
+  stroke-linecap: square;
+  stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+  transition: stroke-dashoffset var(--t-rota) var(--t-swift-out);
+}
+.rota.tracada path {
+  stroke-dashoffset: 0;
+}
+.v-theme--veigaClaro .rota path {
+  stroke: var(--c-grafite);
+}
+
+.no-parada {
+  width: var(--m-no);
+  height: var(--m-no);
+  background: var(--c-ambar);
+  flex: none;
+}
+.v-theme--veigaClaro .no-parada {
+  background: var(--c-grafite);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .no-parada {
+    transform: scale(0.4);
+    opacity: 0;
+    transition:
+      transform 380ms var(--t-snap-in),
+      opacity var(--t-rapido) linear;
+  }
+  .dentro .no-parada,
+  .visivel .no-parada {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ── Menos movimento ───────────────────────────────────────────────────────
+   Mata tudo, inclusive a assinatura de marca. A linha aparece INTEIRA desde o
+   load — ela carrega informação de posição no percurso, não só efeito, então
+   escondê-la seria esconder conteúdo. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .rota path {
+    stroke-dashoffset: 0 !important;
+  }
+  .no-parada {
+    transform: scale(1) !important;
+    opacity: 1 !important;
+  }
+}
