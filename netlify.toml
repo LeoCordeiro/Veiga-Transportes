@@ -5,7 +5,8 @@
 [build.environment]
   NODE_VERSION = "24"
 
-# SPA com hash history: o servidor só precisa entregar o index.
+# O roteamento é por hash, então o servidor só precisa entregar o index para
+# qualquer caminho. Sem isto, um link direto compartilhado devolve 404.
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -17,8 +18,33 @@
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "SAMEORIGIN"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), camera=(), microphone=(), payment=()"
 
+# Os assets do build levam hash no nome, então podem ser cacheados para sempre.
 [[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# O vídeo não leva hash (mora em public/) — cache longo, mas revalidável, para
+# a troca do arquivo chegar sem esperar um ano.
+[[headers]]
+  for = "/video/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, must-revalidate"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# O index nunca é cacheado: é ele que aponta para os assets novos a cada deploy.
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
